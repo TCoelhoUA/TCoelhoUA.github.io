@@ -51,8 +51,8 @@
 
         .carrot {
             position: absolute;
-            width: 60px;
-            height: 60px;
+            width: 100px;
+            height: 100px;
             background-image: url('images/Carrot.webp');
             background-size: cover;
         }
@@ -137,7 +137,7 @@
             </div>
             <button id="try-again-button">Try Again</button>
         </div>
-        <div id="carrot-counter">0/10</div>
+        <div id="carrot-counter" style="background-color: rgb(168, 168, 168); font-size: 50px;">🥕: 0/10</div>
     </div>
 
     <video id="jumpscare-video" src="images/VideoFofinho.mp4" muted></video>
@@ -165,7 +165,7 @@
         let wolfIntervals = []; // Track intervals for moving wolves
 
         // Wolf spawn rate (in milliseconds)
-        const wolfSpawnRate = 1500; // Adjust this to control spawn rate
+        const wolfSpawnRate = 2000; // Adjust this to control spawn rate
 
         // Start game
         startButton.addEventListener('click', () => {
@@ -202,7 +202,7 @@
             carrotsLeft = 10;
             winText.style.display = 'none';
             gameOverText.style.display = 'none';
-            carrotCounter.textContent = `0/10`;
+            carrotCounter.textContent = `🥕: 0/10`;
             rabbit.style.left = '50px';
             rabbit.style.top = '50px';
             rabbit.style.backgroundImage = 'url("images/Rabbit.png")'; // Reset rabbit image
@@ -254,7 +254,7 @@
                         gameContainer.removeChild(carrot);
                         carrotsCollected++;
                         carrotsLeft--;
-                        carrotCounter.textContent = `${carrotsCollected}/10`;
+                        carrotCounter.textContent = `🥕: ${carrotsCollected}/10`;
 
                         // Spawn a new carrot if there are still carrots left
                         if (carrotsLeft > 0) {
@@ -280,10 +280,18 @@
             wolfIntervals = [];
 
             if (isWin) {
-                winText.style.display = 'block';
+                // Play jumpscare video when the player dies
+                jumpscareVideo.style.display = 'block';
+                jumpscareVideo.play();
+                jumpscareVideo.muted = false; // Unmute the video
+                setTimeout(() => {
+                    jumpscareVideo.style.display = 'none';
+                    winText.style.display = 'block';
+                }, 5000); // Hide video after 5 seconds
+
                 setTimeout(function() {
                     window.location.href = "/Trajade.html";
-                }, 5000);
+                }, 10000);
             } else {
 
                 // Play jumpscare video when the player dies
@@ -400,11 +408,11 @@
         }
 
         // Call the earthquakeShake function every 5 seconds
-        setInterval(earthquakeShake, 1000);
+        //setInterval(earthquakeShake, 1000);
         
         document.addEventListener("contextmenu", (event) => event.preventDefault());
         document.addEventListener("keydown", (event) => {
-            if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "s" || event.key === "S")) {
+            if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "s" || event.key === "S" || event.key === "c" || event.key === "C")) {
                 event.preventDefault();
             }
             if (event.ctrlKey && event.shiftKey && (event.key === "i" || event.key === "I" || event.key === "j" || event.key === "J")) {

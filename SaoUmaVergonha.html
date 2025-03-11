@@ -118,16 +118,31 @@
       const inputValue = cityInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Normalize input
 
       // Check if the input matches a city
-      if (cities.includes(inputValue) && !guessedCities.has(inputValue)) {
-        guessedCities.add(inputValue);
+      if (cities.includes(inputValue) && !guessedCities.has(inputValue) || inputValue === "famalicao" && !guessedCities.has("vila nova de famalicao")) {
+        if (inputValue === "famalicao") {
+          guessedCities.add("vila nova de famalicao");
 
-        // Find the corresponding list item and make it visible
-        for (const li of cityList) {
-          if (li.getAttribute('data-city') === inputValue) {
-            li.classList.add('visible');
-            break;
+          // Find the corresponding list item and make it visible
+          for (const li of cityList) {
+            if (li.getAttribute('data-city') === "vila nova de famalicao") {
+              li.classList.add('visible');
+              break;
+            }
           }
         }
+        else {
+          guessedCities.add(inputValue);
+
+          // Find the corresponding list item and make it visible
+          for (const li of cityList) {
+            if (li.getAttribute('data-city') === inputValue) {
+              li.classList.add('visible');
+              break;
+            }
+          }
+        }
+
+
 
         // Clear the input field
         cityInput.value = '';
@@ -147,7 +162,7 @@
 
         document.addEventListener("contextmenu", (event) => event.preventDefault());
         document.addEventListener("keydown", (event) => {
-            if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "s" || event.key === "S")) {
+            if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "s" || event.key === "S" || event.key === "c" || event.key === "C")) {
                 event.preventDefault();
             }
             if (event.ctrlKey && event.shiftKey && (event.key === "i" || event.key === "I" || event.key === "j" || event.key === "J")) {

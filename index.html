@@ -31,11 +31,13 @@
             padding: 5px;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
         }
         .color-segment {
             width: 90%;
             height: 25%;
             border-radius: 5px;
+            cursor: grab;
         }
         .hidden {
             display: none;
@@ -44,18 +46,7 @@
 </head>
 <body>
     <h1>Lixei-me com F0</h1>
-    <div class="game-container" id="game">
-        <div class="tube" onclick="selectTube(0)"></div>
-        <div class="tube" onclick="selectTube(1)"></div>
-        <div class="tube" onclick="selectTube(2)"></div>
-        <div class="tube" onclick="selectTube(3)"></div>
-        <div class="tube" onclick="selectTube(4)"></div>
-        <div class="tube" onclick="selectTube(5)"></div>
-        <div class="tube" onclick="selectTube(6)"></div>
-        <div class="tube" onclick="selectTube(7)"></div>
-        <div class="tube" onclick="selectTube(8)"></div>
-        <div class="tube" onclick="selectTube(9)"></div>
-    </div>
+    <div class="game-container" id="game"></div>
     <img id="winImage" class="hidden" src="images/VaoEncher.png" alt="You Win!" />
     <script>
         let tubes = [
@@ -73,14 +64,24 @@
         let selectedTube = null;
 
         function renderTubes() {
-            document.querySelectorAll(".tube").forEach((tube, index) => {
-                tube.innerHTML = "";
-                tubes[index].slice().reverse().forEach(color => {
+            let gameContainer = document.getElementById("game");
+            gameContainer.innerHTML = "";
+            tubes.forEach((tube, index) => {
+                let tubeDiv = document.createElement("div");
+                tubeDiv.className = "tube";
+                tubeDiv.onclick = () => selectTube(index);
+                tubeDiv.ondragover = (event) => event.preventDefault();
+                tubeDiv.ondrop = (event) => dropColor(event, index);
+                
+                tube.slice().reverse().forEach(color => {
                     let div = document.createElement("div");
                     div.className = "color-segment";
                     div.style.backgroundColor = color;
-                    tube.appendChild(div);
+                    div.draggable = true;
+                    div.ondragstart = (event) => dragColor(event, index);
+                    tubeDiv.appendChild(div);
                 });
+                gameContainer.appendChild(tubeDiv);
             });
         }
 
@@ -90,27 +91,39 @@
                     selectedTube = index;
                 }
             } else {
-                if (index !== selectedTube && tubes[index].length < 4) {
-                    let fromTube = tubes[selectedTube];
-                    let toTube = tubes[index];
-                    
-                    let colorToMove = fromTube[fromTube.length - 1];
-                    if (toTube.length === 0 || toTube[toTube.length - 1] === colorToMove) {
-                        let moveStack = [];
-                        while (fromTube.length > 0 && fromTube[fromTube.length - 1] === colorToMove && toTube.length + moveStack.length < 4) {
-                            moveStack.push(fromTube.pop());
-                        }
-                        while (moveStack.length > 0) {
-                            toTube.push(moveStack.pop());
-                        }
-                    }
-                    selectedTube = null;
-                    checkWinCondition();
-                } else {
-                    selectedTube = null;
-                }
+                moveColor(selectedTube, index);
+                selectedTube = null;
             }
             renderTubes();
+        }
+
+        function moveColor(fromIndex, toIndex) {
+            if (fromIndex === toIndex || tubes[toIndex].length >= 4) return;
+            let fromTube = tubes[fromIndex];
+            let toTube = tubes[toIndex];
+            let colorToMove = fromTube[fromTube.length - 1];
+            if (toTube.length === 0 || toTube[toTube.length - 1] === colorToMove) {
+                let moveStack = [];
+                while (fromTube.length > 0 && fromTube[fromTube.length - 1] === colorToMove && toTube.length + moveStack.length < 4) {
+                    moveStack.push(fromTube.pop());
+                }
+                while (moveStack.length > 0) {
+                    toTube.push(moveStack.pop());
+                }
+            }
+            checkWinCondition();
+        }
+
+        function dragColor(event, fromIndex) {
+            event.dataTransfer.setData("fromIndex", fromIndex);
+        }
+
+        function dropColor(event, toIndex) {
+            let fromIndex = event.dataTransfer.getData("fromIndex");
+            if (fromIndex !== "") {
+                moveColor(parseInt(fromIndex), toIndex);
+                renderTubes();
+            }
         }
 
         function checkWinCondition() {
@@ -123,14 +136,10 @@
             }
         }
 
-        function redirect(subpage) {
-            window.location.href = subpage;
-        }
-
         renderTubes();
         document.addEventListener("contextmenu", (event) => event.preventDefault());
         document.addEventListener("keydown", (event) => {
-            if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "s" || event.key === "S")) {
+            if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "s" || event.key === "S" || event.key === "c" || event.key === "C")) {
                 event.preventDefault();
             }
             if (event.ctrlKey && event.shiftKey && (event.key === "i" || event.key === "I" || event.key === "j" || event.key === "J")) {
