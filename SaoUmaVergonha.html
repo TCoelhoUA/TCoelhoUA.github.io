@@ -138,8 +138,9 @@
           const famalicao = document.querySelector('[data-city="vila nova de famalicao"]');
           famalicao.classList.add('highlighted');
           famalicao.textContent = 'Caniça FamaliCOUUMMM'; // Change text
-          sleep(5000);
-          window.location.href = "/GostoDaMousseDaCF.html";
+          setTimeout(function() {
+                    window.location.href = "/GostoDaMousseDaCF.html";
+                }, 5000);
             }
         }
         });

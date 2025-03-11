@@ -127,6 +127,9 @@
                     if (character.name === 'Trajade') {
                         characterElement.addEventListener('click', () => {
                             gameOver();
+                            setTimeout(function() {
+                                window.location.href = "/PPT.html";
+                            }, 5000);
                         });
                     }
 
@@ -172,6 +175,13 @@
 
         // Start the game
         placeCharacters();
+
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.code === 'KeyC') {
+            e.preventDefault();
+        }
+        });
     </script>
 </body>
 </html>

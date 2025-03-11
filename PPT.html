@@ -57,5 +57,11 @@
         <p>@tiagocoelho17._</p>
         <p>@a_beatriz_26</p>
     </div>
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.code === 'KeyC') {
+        e.preventDefault();
+    }
+    });
 </body>
 </html>

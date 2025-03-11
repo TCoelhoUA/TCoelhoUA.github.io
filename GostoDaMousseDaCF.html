@@ -281,8 +281,9 @@
 
             if (isWin) {
                 winText.style.display = 'block';
-                sleep(5000);
-            window.location.href = "/Trajade.html";
+                setTimeout(function() {
+                    window.location.href = "/Trajade.html";
+                }, 5000);
             } else {
 
                 // Play jumpscare video when the player dies
