@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>F1</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    #tabela-marota {
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically (if needed) */
+        margin-top: 20px;
+    }
+
+    #city-list {
+      list-style: none;
+      padding: 0;
+      margin: 20px auto;
+      width: 300px;
+      text-align: left;
+    }
+
+    #city-list li {
+      margin: 5px 0;
+      padding: 5px;
+      border: 1px solid #ccc;
+      display: none; /* Hide all cities initially */
+    }
+
+    #city-list li.visible {
+      display: block; /* Show city when guessed */
+    }
+
+    #city-list li.highlighted {
+      background-color: rgb(255, 153, 0);
+      color: white;
+      font-weight: bold; /* Make text bold */
+    }
+
+    #input-container {
+      margin-top: 20px;
+    }
+
+    #city-input {
+      padding: 10px;
+      font-size: 16px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lixei-me com F1</h1>
+  <table id="tabela-marota">
+    <tr>
+        <td>
+            <img id="MadeByJuncoCoelho" class="hidden" src="images/MadeByJuncoCoelho.jpg" alt="You Win!" />
+            <p>Dica: Não são nomes de cidades 🤭</p>
+        </td>
+    </tr>
+  </table>
+  <ul id="city-list">
+    <li data-city="amares">Amares</li>
+    <li data-city="barcelos">Barcelos</li>
+    <li data-city="braga">Braga</li>
+    <li data-city="cabeceiras de basto">Cabeceiras de Basto</li>
+    <li data-city="celorico de basto">Celorico de Basto</li>
+    <li data-city="esposende">Esposende</li>
+    <li data-city="fafe">Fafe</li>
+    <li data-city="guimaraes">Guimarães</li>
+    <li data-city="povoa de lanhoso">Póvoa de Lanhoso</li>
+    <li data-city="terras de bouro">Terras de Bouro</li>
+    <li data-city="vieira do minho">Vieira do Minho</li>
+    <li data-city="vila nova de famalicao">Vila Nova de Famalicão</li>
+    <li data-city="vila verde">Vila Verde</li>
+    <li data-city="vizela">Vizela</li>
+  </ul>
+
+  <div id="input-container">
+
+    <input type="text" id="city-input" placeholder="Sou um boneco ( ͡❛ ͜ʖ ͡❛  )">
+    
+  </div>
+
+  <script>
+    // List of cities (normalized to lowercase and without accents)
+    const cities = [
+      'amares',
+      'barcelos',
+      'braga',
+      'cabeceiras de basto',
+      'celorico de basto',
+      'esposende',
+      'fafe',
+      'guimaraes',
+      'povoa de lanhoso',
+      'terras de bouro',
+      'vieira do minho',
+      'vila nova de famalicao',
+      'vila verde',
+      'vizela'
+    ];
+
+    // Track guessed cities
+    const guessedCities = new Set();
+
+    // Get the input field and city list
+    const cityInput = document.getElementById('city-input');
+    const cityList = document.getElementById('city-list').children;
+
+    // Add input event listener
+    cityInput.addEventListener('input', () => {
+      const inputValue = cityInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Normalize input
+
+      // Check if the input matches a city
+      if (cities.includes(inputValue) && !guessedCities.has(inputValue)) {
+        guessedCities.add(inputValue);
+
+        // Find the corresponding list item and make it visible
+        for (const li of cityList) {
+          if (li.getAttribute('data-city') === inputValue) {
+            li.classList.add('visible');
+            break;
+          }
+        }
+
+        // Clear the input field
+        cityInput.value = '';
+
+        // Check if all cities have been guessed
+        if (guessedCities.size === cities.length) {
+          // Highlight "Vila Nova de Famalicão" and change its text
+          const famalicao = document.querySelector('[data-city="vila nova de famalicao"]');
+          famalicao.classList.add('highlighted');
+          famalicao.textContent = 'Caniça FamaliCOUUMMM'; // Change text
+          sleep(5000);
+          window.location.href = "/GostoDaMousseDaCF.html";
+            }
+        }
+        });
+
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.code === 'KeyC') {
+            e.preventDefault();
+        }
+        });
+  </script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trajade</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #title-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px; /* Height of the title bar */
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: center; /* Center the title */
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 1000; /* Ensure the title bar is on top */
+        }
+
+        #refresh-button {
+            position: absolute; /* Position the button absolutely within the title bar */
+            right: 20px; /* Add some spacing from the right edge */
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #refresh-button:hover {
+            background-color: #777;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: calc(100vh - 60px); /* Subtract title bar height */
+            background-image: url('images/background.jpg'); /* Add a background image */
+            background-size: cover;
+            background-position: center;
+            margin-top: 60px; /* Offset for title bar */
+        }
+
+        .character {
+            position: absolute;
+            width: 50px; /* Adjust size as needed */
+            height: 50px; /* Adjust size as needed */
+            cursor: default; /* Make cursor default (not clickable) */
+        }
+
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            font-weight: bold;
+            color: #333;
+            display: none;
+            z-index: 1001; /* Add this line to ensure it's above Trajade.png */
+        }
+    </style>
+</head>
+<body>
+    <div id="title-bar">
+        <span>Lixei-me com F4</span>
+        <button id="refresh-button">Refresh</button>
+    </div>
+    <div id="game-container">
+        <!-- Characters will be dynamically added here -->
+        <div id="game-over">You found Caniça Beatriz!</div>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const gameOverText = document.getElementById('game-over');
+        const refreshButton = document.getElementById('refresh-button');
+
+        // List of Paw Patrol characters
+        const characters = [
+            { name: 'Rubble', src: 'images/Rubble.png' },
+            { name: 'Chase', src: 'images/Chase.png' },
+            { name: 'Skye', src: 'images/Skye.png' },
+            { name: 'Marshall', src: 'images/Marshall.png' },
+            { name: 'Rocky', src: 'images/Rocky.png' },
+            { name: 'Zuma', src: 'images/Zuma.png' },
+            { name: 'Trajade', src: 'images/Trajade.png' } // Hidden character
+        ];
+
+        // Function to place characters randomly on the screen
+        function placeCharacters() {
+            characters.forEach(character => {
+                const count = character.name === 'Trajade' ? 1 : 30; // 300 of each character, 1 Trajade
+
+                for (let i = 0; i < count; i++) {
+                    const characterElement = document.createElement('img');
+                    characterElement.src = character.src;
+                    characterElement.classList.add('character');
+
+                    // Randomize position (avoid title bar area)
+                    const maxX = window.innerWidth - 50;
+                    const maxY = window.innerHeight - 50 - 60; // Subtract title bar height
+                    characterElement.style.left = `${Math.random() * maxX}px`; // Random X position
+                    characterElement.style.top = `${60 + Math.random() * maxY}px`; // Random Y position (below title bar)
+
+                    // Randomize z-index for overlapping
+                    characterElement.style.zIndex = Math.floor(Math.random() * 100);
+
+                    // Add click event listener only for Trajade
+                    if (character.name === 'Trajade') {
+                        characterElement.addEventListener('click', () => {
+                            gameOver();
+                        });
+                    }
+
+                    gameContainer.appendChild(characterElement);
+                }
+            });
+        }
+
+        // Function to handle game over
+        function gameOver() {
+            // Remove all characters except Trajade
+            document.querySelectorAll('.character').forEach(character => {
+                if (character.src.includes('Trajade')) {
+                    character.style.left = '50%';
+                    character.style.top = '50%';
+                    character.style.transform = 'translate(-50%, -50%)';
+                    character.style.width = '200px'; // Make Trajade larger
+                    character.style.height = '200px';
+                    character.style.zIndex = 1000; // Ensure Trajade is on top
+                } else {
+                    character.remove();
+                }
+            });
+
+            // Show game over text
+            gameOverText.style.display = 'block';
+        }
+
+        // Function to restart the game
+        function restartGame() {
+            // Clear all characters
+            document.querySelectorAll('.character').forEach(character => character.remove());
+
+            // Hide game over text
+            gameOverText.style.display = 'none';
+
+            // Place characters again
+            placeCharacters();
+        }
+
+        // Add event listener to the refresh button
+        refreshButton.addEventListener('click', restartGame);
+
+        // Start the game
+        placeCharacters();
+    </script>
+</body>
+</html>

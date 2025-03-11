@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F2</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #menu, #game-over, #win-text {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #e0e0e0;
+            border-bottom: 2px solid #333;
+            display: none;
+        }
+
+        #rabbit {
+            position: absolute;
+            width: 78px;
+            height: 104px;
+            background-image: url('images/Rabbit.png');
+            background-size: cover;
+            background-position: center bottom;
+            transition: transform 0.2s;
+        }
+
+        .wolf {
+            position: absolute;
+            width: 150px;
+            height: 180px;
+            background-image: url('images/Wolf.png');
+            background-size: cover;
+        }
+
+        .carrot {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-image: url('images/Carrot.webp');
+            background-size: cover;
+        }
+
+        #win-text, #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            font-weight: bold;
+            color: #333;
+            display: none;
+        }
+
+        #carrot-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #checkbox-container {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #checkbox-container input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+
+        #checkbox-container label {
+            font-size: 18px;
+            color: black; /* Default color */
+        }
+
+        #checkbox-container input[type="checkbox"]:not(:checked) + label.red {
+            color: red; /* Red color only when checkbox is not checked and label has the "red" class */
+        }
+
+        #jumpscare-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            display: none;
+            z-index: 1000;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="menu">
+        <h1>Lixei-me com F2</h1>
+        <div id="checkbox-container" style="padding: 20px;">
+            <input type="checkbox" id="agree-checkbox">
+            <label for="agree-checkbox" id="agree-label">Somos uma vergonha, lixámo-nos com F3</label>
+        </div>
+        <button id="start-button">Start Game</button>
+    </div>
+
+    <div id="game-container">
+        <div id="rabbit"></div>
+        <div id="win-text">Junco Coelho</div>
+        <div id="game-over">
+            <h1>Game Over</h1>
+            <div id="checkbox-container" style="padding: 20px;">
+                <input type="checkbox" id="agree-checkbox-game-over">
+                <label for="agree-checkbox-game-over" id="agree-label-game-over">Somos uma vergonha, lixámo-nos com F3</label>
+            </div>
+            <button id="try-again-button">Try Again</button>
+        </div>
+        <div id="carrot-counter">0/10</div>
+    </div>
+
+    <video id="jumpscare-video" src="images/VideoFofinho.mp4" muted></video>
+
+    <script>
+        const rabbit = document.getElementById('rabbit');
+        const gameContainer = document.getElementById('game-container');
+        const winText = document.getElementById('win-text');
+        const gameOverText = document.getElementById('game-over');
+        const startButton = document.getElementById('start-button');
+        const tryAgainButton = document.getElementById('try-again-button');
+        const menu = document.getElementById('menu');
+        const carrotCounter = document.getElementById('carrot-counter');
+        const agreeCheckbox = document.getElementById('agree-checkbox');
+        const agreeLabel = document.getElementById('agree-label');
+        const agreeCheckboxGameOver = document.getElementById('agree-checkbox-game-over');
+        const agreeLabelGameOver = document.getElementById('agree-label-game-over');
+        const jumpscareVideo = document.getElementById('jumpscare-video');
+
+        let isJumping = false;
+        let gameActive = false;
+        let carrotsCollected = 0;
+        let carrotsLeft = 10;
+        let rabbitDirection = 'right';
+        let wolfIntervals = []; // Track intervals for moving wolves
+
+        // Wolf spawn rate (in milliseconds)
+        const wolfSpawnRate = 1500; // Adjust this to control spawn rate
+
+        // Start game
+        startButton.addEventListener('click', () => {
+            if (!agreeCheckbox.checked) {
+                // If checkbox is not checked, turn label red
+                agreeLabel.classList.add('red');
+                return;
+            }
+
+            // If checkbox is checked, start the game
+            agreeLabel.checked = false;
+            startGame();
+        });
+
+        // Try again button
+        tryAgainButton.addEventListener('click', () => {
+            if (!agreeCheckboxGameOver.checked) {
+                // If checkbox is not checked, turn label red
+                agreeLabelGameOver.classList.add('red');
+                return;
+            }
+
+            // If checkbox is checked, restart the game
+            agreeCheckboxGameOver.checked = false;
+            gameOverText.style.display = 'none';
+            startGame();
+        });
+
+        function startGame() {
+            menu.style.display = 'none';
+            gameContainer.style.display = 'block';
+            gameActive = true;
+            carrotsCollected = 0;
+            carrotsLeft = 10;
+            winText.style.display = 'none';
+            gameOverText.style.display = 'none';
+            carrotCounter.textContent = `0/10`;
+            rabbit.style.left = '50px';
+            rabbit.style.top = '50px';
+            rabbit.style.backgroundImage = 'url("images/Rabbit.png")'; // Reset rabbit image
+
+            // Clear existing wolves and carrots
+            document.querySelectorAll('.wolf, .carrot').forEach(element => element.remove());
+
+            // Clear all wolf intervals
+            wolfIntervals.forEach(interval => clearInterval(interval));
+            wolfIntervals = [];
+
+            // Start wolf spawner
+            setInterval(createWolf, wolfSpawnRate);
+
+            // Delay carrot spawning by 10 seconds
+            setTimeout(() => {
+                if (gameActive) {
+                    spawnCarrot();
+                }
+            }, 10000);
+
+            // Game loop
+            setInterval(() => {
+                if (!gameActive) return;
+
+                // Check for collisions with wolves
+                const rabbitRect = rabbit.getBoundingClientRect();
+                document.querySelectorAll('.wolf').forEach(wolf => {
+                    const wolfRect = wolf.getBoundingClientRect();
+                    if (
+                        rabbitRect.left < wolfRect.right &&
+                        rabbitRect.right > wolfRect.left &&
+                        rabbitRect.bottom > wolfRect.top &&
+                        rabbitRect.top < wolfRect.bottom
+                    ) {
+                        endGame();
+                    }
+                });
+
+                // Check for collisions with carrots
+                document.querySelectorAll('.carrot').forEach(carrot => {
+                    const carrotRect = carrot.getBoundingClientRect();
+                    if (
+                        rabbitRect.left < carrotRect.right &&
+                        rabbitRect.right > carrotRect.left &&
+                        rabbitRect.bottom > carrotRect.top &&
+                        rabbitRect.top < carrotRect.bottom
+                    ) {
+                        gameContainer.removeChild(carrot);
+                        carrotsCollected++;
+                        carrotsLeft--;
+                        carrotCounter.textContent = `${carrotsCollected}/10`;
+
+                        // Spawn a new carrot if there are still carrots left
+                        if (carrotsLeft > 0) {
+                            spawnCarrot();
+                        } else {
+                            // Player wins
+                            endGame(true);
+                        }
+                    }
+                });
+            }, 100);
+        }
+
+        // End the game
+        function endGame(isWin = false) {
+            gameActive = false;
+
+            // Clear all wolves
+            document.querySelectorAll('.wolf').forEach(wolf => wolf.remove());
+
+            // Clear all wolf intervals
+            wolfIntervals.forEach(interval => clearInterval(interval));
+            wolfIntervals = [];
+
+            if (isWin) {
+                winText.style.display = 'block';
+                sleep(5000);
+            window.location.href = "/Trajade.html";
+            } else {
+
+                // Play jumpscare video when the player dies
+                jumpscareVideo.style.display = 'block';
+                jumpscareVideo.play();
+                jumpscareVideo.muted = false; // Unmute the video
+                setTimeout(() => {
+                    jumpscareVideo.style.display = 'none';
+                    gameOverText.style.display = 'block';
+                }, 5000); // Hide video after 5 seconds
+            }
+        }
+
+        // Mouse movement controls
+        let previousMouseX = 0;
+        gameContainer.addEventListener('mousemove', (event) => {
+            if (!gameActive) return;
+
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
+            const rabbitWidth = rabbit.offsetWidth;
+            const rabbitHeight = rabbit.offsetHeight;
+            const containerWidth = gameContainer.offsetWidth;
+            const containerHeight = gameContainer.offsetHeight;
+
+            // Move rabbit horizontally and vertically
+            let newLeft = mouseX - rabbitWidth / 2;
+            let newTop = mouseY - rabbitHeight / 2;
+
+            // Constrain rabbit within the game container
+            newLeft = Math.max(0, Math.min(newLeft, containerWidth - rabbitWidth));
+            newTop = Math.max(0, Math.min(newTop, containerHeight - rabbitHeight));
+
+            rabbit.style.left = `${newLeft}px`;
+            rabbit.style.top = `${newTop}px`;
+
+            // Flip rabbit image when moving backward
+            if (mouseX < previousMouseX) {
+                rabbit.style.backgroundImage = 'url("images/RabbitReversed.png")'; // Reverse image
+            } else if (mouseX > previousMouseX) {
+                rabbit.style.backgroundImage = 'url("images/Rabbit.png")'; // Normal image
+            }
+            previousMouseX = mouseX;
+        });
+
+        // Create wolves
+        function createWolf() {
+            if (!gameActive) return;
+
+            const wolf = document.createElement('div');
+            wolf.classList.add('wolf');
+            wolf.style.left = `${gameContainer.offsetWidth}px`;
+            wolf.style.bottom = `${Math.random() * (gameContainer.offsetHeight - 100)}px`; // Randomize vertical position
+            gameContainer.appendChild(wolf);
+
+            const moveWolf = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(moveWolf);
+                    return;
+                }
+
+                const wolfLeft = parseInt(wolf.style.left, 10);
+                if (wolfLeft < -80) {
+                    clearInterval(moveWolf);
+                    gameContainer.removeChild(wolf);
+                } else {
+                    wolf.style.left = `${wolfLeft - 10}px`;
+                }
+            }, 50);
+
+            // Track the interval for this wolf
+            wolfIntervals.push(moveWolf);
+        }
+
+        // Spawn carrots
+        function spawnCarrot() {
+            const carrot = document.createElement('div');
+            carrot.classList.add('carrot');
+            carrot.style.left = `${Math.random() * (gameContainer.offsetWidth - 40)}px`; // Randomize horizontal position
+            carrot.style.bottom = `${Math.random() * (gameContainer.offsetHeight - 100)}px`; // Randomize vertical position
+            gameContainer.appendChild(carrot);
+        }
+        // Function to make the mouse shake like an earthquake
+        function earthquakeShake() {
+            if (!gameActive) return; // Only shake if the game is active
+
+            const shakeIntensity = 20; // How much the mouse shakes (in pixels)
+            const shakeDuration = 500; // How long the shake lasts (in milliseconds)
+            const shakeSteps = 10; // Number of steps in the shake animation
+            const stepDuration = shakeDuration / shakeSteps; // Duration of each step
+
+            // Save the rabbit's original position
+            const originalLeft = parseInt(rabbit.style.left, 10);
+            const originalTop = parseInt(rabbit.style.top, 10);
+
+            // Perform the shake animation
+            for (let i = 0; i < shakeSteps; i++) {
+                setTimeout(() => {
+                    // Generate random offsets for the mouse position
+                    const offsetX = (Math.random() - 0.5) * shakeIntensity * 2;
+                    const offsetY = (Math.random() - 0.5) * shakeIntensity * 2;
+
+                    // Apply the shake effect to the rabbit's position
+                    rabbit.style.left = `${originalLeft + offsetX}px`;
+                    rabbit.style.top = `${originalTop + offsetY}px`;
+                }, i * stepDuration);
+            }
+
+            // Reset the rabbit's position after the shake duration
+            setTimeout(() => {
+                rabbit.style.left = `${originalLeft}px`;
+                rabbit.style.top = `${originalTop}px`;
+            }, shakeDuration);
+        }
+
+        // Call the earthquakeShake function every 5 seconds
+        setInterval(earthquakeShake, 1000);
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.code === 'KeyC') {
+            e.preventDefault();
+        }
+        });
+    </script>
+</body>
+</html>
