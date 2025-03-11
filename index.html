@@ -117,8 +117,9 @@
             if (tubes.every(tube => tube.length === 0 || (tube.length === 4 && tube.every(color => color === tube[0])))) {
                 document.getElementById("game").classList.add("hidden");
                 document.getElementById("winImage").classList.remove("hidden");
-                sleep(5000);
-                window.location.href = "/SaoUmaVergonha.html";
+                setTimeout(function() {
+                    window.location.href = "/SaoUmaVergonha.html";
+                }, 5000);
             }
         }
 
